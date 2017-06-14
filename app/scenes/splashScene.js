@@ -1,12 +1,12 @@
 import React, { Component } from 'react'
-import { Image, StyleSheet, Text, AsyncStorage } from 'react-native'
+import { Image, StyleSheet, Text, AsyncStorage, StatusBar } from 'react-native'
 import { View, Spinner } from 'native-base'
 import { NavigationActions } from 'react-navigation'
 
-//stores
-import SettingsStore from '.././stores/settingsStore'
+//Settings
+import Settings from '../settings'
 
-const settings = new SettingsStore()
+const settings = new Settings()
 
 export default class SplashScene extends Component {
     static navigationOptions = ({ navigation }) => ({
@@ -45,6 +45,10 @@ export default class SplashScene extends Component {
                 backgroundColor: '#3F51B5',
                 padding: 20
             }}>
+                <StatusBar
+                    backgroundColor="#3F51B5"
+                    barStyle="light-content"
+                />
                 <View style={{
                     flex: 2,
                     justifyContent: 'center',

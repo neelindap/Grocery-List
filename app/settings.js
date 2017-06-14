@@ -1,5 +1,4 @@
 import firebase from 'firebase'
-import MobxFirebaseStore from 'mobx-firebase-store'
 
 const config = {
     apiKey: "AIzaSyDic72yczOGwxlANfKXwjCfFzLafgvQacY",
@@ -10,11 +9,9 @@ const config = {
     messagingSenderId: "980333765824"
 };
 
-export default class SettingsStore extends MobxFirebaseStore {
+export default class Settings {
     constructor() {
         firebase.initializeApp(config)
-        super(firebase.database().ref())
-
         this.splashTime = 2000
     }
 

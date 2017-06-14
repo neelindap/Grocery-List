@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
-import { Alert, View } from 'react-native';
-import { Body, Button, Container, Content, Icon, Input, Picker, Text, Toast } from 'native-base';
+import { View, StatusBar } from 'react-native';
+import { Body, Button, Container, Content, Icon, Input, Picker, Text } from 'native-base';
 import firebase from 'firebase'
+import Toast from 'react-native-easy-toast'
 
 const Item = Picker.Item;
 
@@ -15,42 +16,42 @@ export default class NewListItem extends Component {
     });
     constructor(props) {
         super(props);
-        var user = firebase.auth().currentUser
         this.state = {
             selectedItem: undefined,
-            selected: user.displayName,
-            userName: user.displayName,
+            selected: '',
+            userName: '',
             newListItem: '',
         }
     }
+    componentWillMount() {
+        firebase.database().ref('users/' + firebase.auth().currentUser.uid).once('value').then((snapshot) => {
+            var name = snapshot.val().name;
+            this.setState({
+                userName: name,
+                selected: name
+            })
+        })
+            .catch((error) => {
+
+            });
+    }
     addListItem() {
         if (this.state.newListItem === '') {
-            Toast.show({
-                supportedOrientations: ['potrait', 'landscape'],
-                text: 'Please enter the item to be added',
-                position: 'bottom',
-                duration: 1500,
-                type: "warning"
-            })
+            this.refs.error.show('Please enter the item to be added', 1500);
             return
         }
         if (String.prototype.trim.call(this.state.newListItem) !== "") {
             firebase.database().ref().child("/listItems").push({
-                name: this.state.newListItem +"("+this.state.selected+")",
+                name: this.state.newListItem,
                 listRef: this.props.navigation.state.params.newItemKey,
+                itemFor: this.state.selected,
                 checked: false
             });
             this.setState({ newListItem: '' });
-             Toast.show({
-                supportedOrientations: ['potrait', 'landscape'],
-                text: 'Item added successfully to list!',
-                position: 'bottom',
-                duration: 1500,
-                type: "success"
-            })
+            this.refs.success.show('Item added successfully to list!', 1500);
         }
     }
-    onValueChange(value: string) {
+    onValueChange(value) {
         this.setState({
             selected: value
         });
@@ -61,6 +62,10 @@ export default class NewListItem extends Component {
     render() {
         return (
             <Container>
+                <StatusBar
+                    backgroundColor="#3F51B5"
+                    barStyle="light-content"
+                />
                 <Content padder>
                     <View padder>
                         <Text>Picking up for: </Text>
@@ -74,7 +79,7 @@ export default class NewListItem extends Component {
                             <Item label="Common" value="Common" />
                         </Picker>
                     </View>
-                    <View padder style={{flexDirection: 'row'}}>
+                    <View padder style={{ flexDirection: 'row' }}>
                         <Input placeholder='Item Name'
                             value={this.state.newListItem}
                             onChangeText={(text) => this.updateName(text)} />
@@ -83,6 +88,24 @@ export default class NewListItem extends Component {
                         </Button>
                     </View>
                 </Content>
+                <Toast
+                    ref="error"
+                    style={{ backgroundColor: 'red' }}
+                    position='bottom'
+                    positionValue={200}
+                    fadeInDuration={750}
+                    fadeOutDuration={1000}
+                    opacity={0.8}
+                />
+                <Toast
+                    ref="success"
+                    style={{ backgroundColor: 'green' }}
+                    position='bottom'
+                    positionValue={200}
+                    fadeInDuration={750}
+                    fadeOutDuration={1000}
+                    opacity={0.8}
+                />
             </Container>
         )
     }

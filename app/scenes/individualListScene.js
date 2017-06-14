@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Alert } from 'react-native';
+import { StatusBar } from 'react-native';
 import {
     Container,
     Content,
@@ -11,10 +11,10 @@ import {
     Text,
     Fab,
     Spinner,
-    CheckBox,
-    Toast
+    CheckBox
 } from 'native-base';
 import firebase from 'firebase'
+import Toast from 'react-native-easy-toast'
 
 export default class IndividualList extends Component {
     static navigationOptions = ({ navigation }) => ({
@@ -45,6 +45,7 @@ export default class IndividualList extends Component {
                     items.push({
                         name: child.val().name,
                         checked: child.val().checked,
+                        itemFor: child.val().itemFor,
                         key: child.key
                     });
                 }
@@ -67,60 +68,36 @@ export default class IndividualList extends Component {
     }
     addListItem() {
         this.props.navigation.navigate('NewListItem', { newItemKey: this.props.navigation.state.params.newItem.key })
-        /*
-        if (this.state.newListItem === '') {
-            Alert.alert(
-                'Warning',
-                'Please enter the list item name to be added',
-                [
-                    { text: 'OK' }
-                ]
-            )
-            return
-        }
-        if (String.prototype.trim.call(this.state.newListItem) !== "") {
-            firebase.database().ref().child("/listItems").push({
-                name: this.state.user.displayName + ' - ' + this.state.newListItem,
-                listRef: this.props.navigation.state.params.newItem.key,
-                checked: false
-            });
-            this.setState({ newListItem: '' });
-            Alert.alert(
-                'Success',
-                'List item added sucessfully!',
-                [
-                    { text: 'OK' }
-                ]
-            )
-        } */
     }
     removeItem(key) {
         firebase.database().ref().child("/listItems/" + key).remove();
-        Toast.show({
-            supportedOrientations: ['potrait', 'landscape'],
-            text: 'List item deleted sucessfully!',
-            position: 'bottom',
-            duration: 1500,
-            type: "success"
-        })
+        this.refs.success.show('List item deleted sucessfully!', 1500);
     }
     render() {
         if (this.state.loading) {
             return (
                 <Container>
+                    <StatusBar
+                        backgroundColor="#3F51B5"
+                        barStyle="light-content"
+                    />
                     <Spinner style={{ flex: 1, justifyContent: 'center' }} />
                 </Container>
             );
         } else {
             return (
                 <Container>
+                    <StatusBar
+                        backgroundColor="#3F51B5"
+                        barStyle="light-content"
+                    />
                     <Content>
                         <List dataArray={this.state.items}
                             renderRow={(item) =>
                                 <ListItem>
                                     <Left >
                                         <CheckBox checked={item.checked} onPress={() => this.updateCheckBox(item.key, item.checked)} />
-                                        <Text style={{ marginLeft: 15 }}>{item.name}</Text>
+                                        <Text style={{ marginLeft: 15 }}>{item.name} - {item.itemFor}</Text>
                                     </Left>
                                     <Right>
                                         <Icon style={{ color: 'red' }} name="ios-remove-circle" onPress={() => this.removeItem(item.key)} />
@@ -130,11 +107,30 @@ export default class IndividualList extends Component {
                         </List>
                     </Content>
                     <Fab
-                        containerStyle={{ width: 20 }}
+                        style={{ backgroundColor: '#3F51B5' }}
+                        containerStyle={{ marginRight: 10 }}
                         position="bottomRight"
                         onPress={() => this.addListItem()} >
                         <Icon name="md-add" />
                     </Fab>
+                    <Toast
+                        ref="error"
+                        style={{ backgroundColor: 'red' }}
+                        position='bottom'
+                        positionValue={200}
+                        fadeInDuration={750}
+                        fadeOutDuration={1000}
+                        opacity={0.8}
+                    />
+                    <Toast
+                        ref="success"
+                        style={{ backgroundColor: 'green' }}
+                        position='bottom'
+                        positionValue={200}
+                        fadeInDuration={750}
+                        fadeOutDuration={1000}
+                        opacity={0.8}
+                    />
                 </Container>
             );
         }
