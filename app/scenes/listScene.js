@@ -45,6 +45,7 @@ export default class Lists extends Component {
             newListName: '',
             list: []
         };
+        console.log("AAAA" +props.navigation.state.params)
     }
     updateName(text) {
         this.setState({ newListName: text });

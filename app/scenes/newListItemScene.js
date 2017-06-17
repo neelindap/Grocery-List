@@ -19,21 +19,31 @@ export default class NewListItem extends Component {
         this.state = {
             selectedItem: undefined,
             selected: '',
-            userName: '',
+            userName: [],
             newListItem: '',
         }
     }
     componentWillMount() {
-        firebase.database().ref('users/' + firebase.auth().currentUser.uid).once('value').then((snapshot) => {
-            var name = snapshot.val().name;
-            this.setState({
-                userName: name,
-                selected: name
-            })
-        })
-            .catch((error) => {
-
+        firebase.database().ref('lists/' + this.props.navigation.state.params.newItemKey + '/users').once('value').then((snap) => {
+            var lists = [{ name: "Common", key: "Common" }]
+            snap.val().map(function (user) {
+                lists.push({
+                    name: user.name,
+                    key: user.key
+                });
             });
+            this.setState({
+                userName: lists,
+                selected: lists[0]
+            })
+        });
+    }
+    pickerItems() {
+        return this.state.userName.map(function (user) {
+            return (
+                <Item label={user.name} value={user.name} key={user.key} />
+            );
+        }, this);
     }
     addListItem() {
         if (this.state.newListItem === '') {
@@ -61,7 +71,7 @@ export default class NewListItem extends Component {
     }
     render() {
         return (
-            <Container>
+            <Container >
                 <StatusBar
                     backgroundColor="#3F51B5"
                     barStyle="light-content"
@@ -75,14 +85,24 @@ export default class NewListItem extends Component {
                             mode="dropdown"
                             selectedValue={this.state.selected}
                             onValueChange={this.onValueChange.bind(this)}>
-                            <Item label={this.state.userName} value={this.state.userName} />
-                            <Item label="Common" value="Common" />
+                            {
+                                this.pickerItems()
+                            }
                         </Picker>
                     </View>
                     <View padder style={{ flexDirection: 'row' }}>
                         <Input placeholder='Item Name'
                             value={this.state.newListItem}
-                            onChangeText={(text) => this.updateName(text)} />
+                            onChangeText={(text) => this.updateName(text)}
+                            style={{
+                                borderColor: 'gray',
+                                borderRightWidth: 0,
+                                borderLeftWidth: 0,
+                                borderTopWidth: 0,
+                                borderBottomWidth: 1
+                            }}
+                            underlineColorAndroid='rgba(0,0,0,0)'
+                        />
                         <Button rounded onPress={() => this.addListItem()}>
                             <Icon name="md-add" />
                         </Button>
@@ -106,7 +126,7 @@ export default class NewListItem extends Component {
                     fadeOutDuration={1000}
                     opacity={0.8}
                 />
-            </Container>
+            </Container >
         )
     }
 }

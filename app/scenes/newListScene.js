@@ -25,7 +25,6 @@ export default class NewList extends Component {
             name: firebase.auth().currentUser.displayName,
             key: firebase.auth().currentUser.uid
         }]
-
         this.state = {
             query: '',
             users: [],
@@ -66,6 +65,15 @@ export default class NewList extends Component {
             })
         }
     }
+    removePersonFromList(person) {
+        var person = [] = this.state.added.filter(function (p) {
+            return p.key !== person.key
+        });
+
+        this.setState({
+            added: person
+        })
+    }
     createNewList() {
         if (String.prototype.trim.call(this.state.newListName) === '') {
             this.refs.error.show('Please enter the list name to be created', 2000);
@@ -76,23 +84,28 @@ export default class NewList extends Component {
             this.refs.error.show('Please ', 2000);
             return
         }
-
         firebase.database().ref().child("/lists").push({
             name: this.state.newListName,
             users: this.state.added
         });
-        this.setState({ newListName: '' });
+        this.setState({
+            newListName: '',
+            added: currUser
+        });
         this.refs.success.show('List created sucessfully!', 1500);
     }
     printAdded() {
         return this.state.added.map(function (person) {
+            var deleteUser = <Icon style={{ color: 'red' }} name="ios-remove-circle" onPress={() => this.removePersonFromList(person)} />
+            if (person.key === firebase.auth().currentUser.uid)
+                deleteUser = null
             return (
                 <View style={{ padding: 5, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                     <Text key={person.key} style={{ color: '#000', fontSize: 18 }}>{person.name}</Text>
-                    <Icon style={{ color: 'red' }} name="ios-remove-circle" onPress={() => console.log("remove")} />
+                    {deleteUser}
                 </View>
             );
-        });
+        }, this);
     }
     _filterData(query) {
         if (query === '') {
@@ -116,10 +129,13 @@ export default class NewList extends Component {
                         value={this.state.newListName}
                         onChangeText={(text) => this.updateName(text)}
                         style={{
-                            borderBottomWidth: 1,
-                            borderBottomColor: 'rgba(255,255,255,0.2)'
+                            borderColor: 'gray',
+                            borderRightWidth: 0,
+                            borderLeftWidth: 0,
+                            borderTopWidth: 0,
+                            borderBottomWidth: 1
                         }} />
-                    <View padder style={{ flexDirection: 'row' }}>
+                    <View padder style={{ flexDirection: 'row', paddingTop: 5 }}>
                         <Autocomplete
                             data={data}
                             defaultValue={query}
@@ -135,14 +151,14 @@ export default class NewList extends Component {
                             onChangeText={text => this.setState({ query: text })}
                             renderItem={({ name, key }) => (
                                 <TouchableOpacity onPress={() => {
-                                        this.setState({
-                                            query: name,
-                                            newPerson: {
-                                                name,
-                                                key
-                                            }
-                                        });
-                                    }
+                                    this.setState({
+                                        query: name,
+                                        newPerson: {
+                                            name,
+                                            key
+                                        }
+                                    });
+                                }
                                 }>
                                     <Text>{name}</Text>
                                 </TouchableOpacity>
@@ -153,7 +169,7 @@ export default class NewList extends Component {
                         </Button>
                     </View>
                     <View style={{ marginTop: 25 }}>
-                        <Text style={{ color: 'black', fontSize: 20 }}>People present in list</Text>
+                        <Text style={{ color: 'black', fontSize: 20 }}>People with access to the list</Text>
                         {this.state.added.length > 0 ? (
                             this.printAdded()
                         ) : (

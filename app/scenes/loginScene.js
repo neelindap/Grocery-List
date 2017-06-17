@@ -128,10 +128,27 @@ export default class Login extends Component {
             }}>LOGIN</Text>
         }
     }
+    validateEmail = (email) => {
+        var regEx = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
+        return regEx.test(email);
+    };
     login() {
+        // Validation
+        if (this.state.userName == "") {
+            this.refs.error.show('User name cannot be blank.', 1500);
+            return
+        } else if (!this.validateEmail(this.state.userName)) {
+            this.refs.error.show('User name is not in the required format', 1500);
+            return
+        } else if (this.state.password == "") {
+            this.refs.error.show('Password cannot be blank', 1500);
+            return
+        }
+
         this.setState({ loading: true })
         firebase.auth().signInWithEmailAndPassword(this.state.userName, this.state.password).then((userData) => {
             AsyncStorage.setItem('userData', JSON.stringify(userData));
+            this.setState({ loading: false })
             this.props.navigation.navigate('Lists', { passProps: this.props.navigation.state.params })
         }
         ).catch((error) => {

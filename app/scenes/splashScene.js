@@ -31,7 +31,7 @@ export default class SplashScene extends Component {
         const resetAction = NavigationActions.reset({
             index: 0,
             actions: [
-                NavigationActions.navigate({ routeName: this.state.action })
+                NavigationActions.navigate({ routeName: this.state.action, returning: true })
             ]
         })
         setTimeout(() => {
